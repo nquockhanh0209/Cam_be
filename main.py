@@ -9,7 +9,7 @@ if __name__ == '__main__':
     Base.metadata.create_all(bind= engine)
     service_ai = ServiceAI()
     print(service_ai)
-    def create_service(engine, name: String, type: AIServiceType, hostName: String, ipAddress: String, macAddress: String, heartbeat: String):
+    def create_service(engine, name: str, type: AIServiceType, hostName: str, ipAddress: str, macAddress: str, heartbeat: str):
         
         service_ai.create_service(engine, name, type, hostName, ipAddress, macAddress, heartbeat)
     
@@ -44,3 +44,4 @@ if __name__ == '__main__':
     child.start()
 
     child.join()
+    

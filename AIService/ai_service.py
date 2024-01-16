@@ -42,69 +42,76 @@ class ServiceAI(Base):
    
          
     
-    def create_service(self, engine, name: String, type: AIServiceType, hostName: String, ipAddress: String, macAddress: String, heartbeat: String):
-        body = {
-            "name": name,
-            "type": type,
-            "hostName": hostName,
-            "ipAddress": ipAddress,
-            "macAddress": macAddress,
-            "heartbeat": heartbeat,
-
-        }
-        
-        headers= {
-            "Id":"alo",
-            "Content-Type": "application/json"
-        }
-        r = requests.post(url=create_service_url, data=json.dumps(body), headers=headers)
-        res = r.json()
-   
-        self.id= res["id"]
-        self.name = res["name"]
-        self.type= res["type"]
-        self.hostName=res["hostName"]
-        self.ipAddress=res["ipAddress"]
-        self.heartbeat=res["heartbeat"]
-        self.state=res["state"]
-
+    def create_service(self, engine, name: str, type: AIServiceType, hostName: str, ipAddress: str, macAddress: str, heartbeat: str):
         Session = sessionmaker(bind= engine)
         session = Session()
-        service = self
-        session.add(service)
-        session.commit()
-        
-        
-        
-        camCreateParams = {
-            "name": "alo4",
-            "urlMainstream": "rtsp://alo4.com"
-        }
-        print("create_cam_url", create_cam_url)
-        r = requests.post(url=create_cam_url, params=(camCreateParams), headers=headers)
-        print("res",r.json())
-        
-        camUpdateParams = {
-            "id": 3,
-            "serviceId": self.id
-        }
-        
+        if not bool(session.query(ServiceAI).filter().first()):
+            body = {
+                "name": name,
+                "type": type,
+                "hostName": hostName,
+                "ipAddress": ipAddress,
+                "macAddress": macAddress,
+                "heartbeat": heartbeat,
+
+            }
+            
+            headers= {
+                "Id":"alo",
+                "Content-Type": "application/json"
+            }
+            r = requests.post(url=create_service_url, data=json.dumps(body), headers=headers)
+            res = r.json()
     
-        process_ai = ProcessAI()
-        process_ai.start(engine, self.id)
+            self.id= res["id"]
+            self.name = res["name"]
+            self.type= res["type"]
+            self.hostName=res["hostName"]
+            self.ipAddress=res["ipAddress"]
+            self.heartbeat=res["heartbeat"]
+            self.state=res["state"]
+
+            
+            service = self
+            session.add(service)
+            session.commit()
+            
+            
+            
+            camCreateParams = {
+                "name": "alo4",
+                "urlMainstream": "rtsp://alo4.com"
+            }
+            print("create_cam_url", create_cam_url)
+            r = requests.post(url=create_cam_url, params=(camCreateParams), headers=headers)
+            print("res",r.json())
+            
+            camUpdateParams = {
+                "id": 3,
+                "serviceId": self.id
+            }
+            
         
-        async def start_websocket(wss_url: String):
+            process_ai = ProcessAI()
+            process_ai.start(engine, self.id)
+            r = requests.patch(url=update_cam_url, params=(camUpdateParams), headers=headers)
+               
+        self.id = 57   
+        async def start_websocket(wss_url: str):
             print("wss_url",wss_url)
             async with websockets.connect(wss_url) as ws:
                 
-                r = requests.patch(url=update_cam_url, params=(camUpdateParams), headers=headers)
-                print(camUpdateParams)
-                print(r.status_code)
+                
                 while True:
                     msg = await ws.recv()
-                    print(json.loads(msg))
+                    
                     if json.loads(msg)["dst"] ==str(self.id):
-                        await ws.send("MSG")
+                        print(str(json.loads(msg)["deliveryTag"]))
+                        res = {
+                            "deliveryTag": str(json.loads(msg)["deliveryTag"])
+                        }
+                        print(res)
+                        await ws.send(json.dumps(res))
         final_wss_url = wss_url + str(self.id)
         asyncio.run(start_websocket(final_wss_url))
         

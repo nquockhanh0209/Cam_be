@@ -36,7 +36,7 @@ class AIFlow(Base):
     #     self.type = type
    
     
-    def load_from_api(self, engine ,api_url: String):
+    def load_from_api(self, engine ,api_url: str):
         headers= {
             "Id":"alo"
         }
