@@ -96,24 +96,24 @@ class ServiceAI(Base):
             process_ai.start(engine, self.id)
             r = requests.patch(url=update_cam_url, params=(camUpdateParams), headers=headers)
                
-        self.id = 57   
-        async def start_websocket(wss_url: str):
-            print("wss_url",wss_url)
-            async with websockets.connect(wss_url) as ws:
-                
-                
-                while True:
-                    msg = await ws.recv()
+            self.id = 57   
+            async def start_websocket(wss_url: str):
+                print("wss_url",wss_url)
+                async with websockets.connect(wss_url) as ws:
                     
-                    if json.loads(msg)["dst"] ==str(self.id):
-                        print(str(json.loads(msg)["deliveryTag"]))
-                        res = {
-                            "deliveryTag": str(json.loads(msg)["deliveryTag"])
-                        }
-                        print(res)
-                        await ws.send(json.dumps(res))
-        final_wss_url = wss_url + str(self.id)
-        asyncio.run(start_websocket(final_wss_url))
+                    
+                    while True:
+                        msg = await ws.recv()
+                        
+                        if json.loads(msg)["dst"] ==str(self.id):
+                            print(str(json.loads(msg)["deliveryTag"]))
+                            res = {
+                                "deliveryTag": str(json.loads(msg)["deliveryTag"])
+                            }
+                            print(res)
+                            await ws.send(json.dumps(res))
+            final_wss_url = wss_url + str(self.id)
+            asyncio.run(start_websocket(final_wss_url))
         
 
     
