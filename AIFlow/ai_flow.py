@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, ForeignKey, Column, String, Integer, CHAR, Boolean, PickleType,Enum, update
+from sqlalchemy import create_engine, ForeignKey, Column, String, Integer, Boolean, PickleType,Enum, update
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from threading import Thread
@@ -49,24 +49,24 @@ class AIFlow(Base):
         for aiflow in aiflows:
             
             if not bool(session.query(AIFlow).filter_by(id=aiflow["id"]).first()):
+                print('aiflow["apply"]', aiflow["apply"])
                 
-                
-                self.__init__(int(aiflow["id"]),
-                            aiflow["alert"],
-                            aiflow["apply"],
-                            aiflow["cameraIds"],
-                            aiflow["type"]
-                            )
+                self.id = int(aiflow["id"]),
+                self.alert= aiflow["alert"],
+                self.apply= aiflow["apply"],
+                self.cameraIds= aiflow["cameraIds"],
+                self.type= aiflow["type"]
+                            
                 flow = self
                 session.add(flow)
                 session.commit()
 
         
-if __name__ == "__main__":
-    engine = create_engine("sqlite:///database.db", echo = True)
-    Base.metadata.create_all(bind= engine)
-    api_url = "http://192.168.1.212:48080/api/aiflows" 
-    ai_flow = AIFlow()
-    ai_flow.load_from_api(engine, api_url)
+# if __name__ == "__main__":
+#     engine = create_engine("sqlite:///database.db", echo = True)
+#     Base.metadata.create_all(bind= engine)
+#     api_url = "http://192.168.1.212:48080/api/aiflows" 
+#     ai_flow = AIFlow()
+#     ai_flow.load_from_api(engine, api_url)
     
 

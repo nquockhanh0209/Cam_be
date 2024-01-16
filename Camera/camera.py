@@ -45,20 +45,21 @@ class Camera(Base):
         for camera in cameras:
    
             if not bool(session.query(Camera).filter_by(id=camera["id"]).first()):
-                self.__init__(int(camera["id"]),
-                            camera["name"],
-                            camera["activate"],
-                            camera["restreamEndpoint"],
-                            camera["state"]
-                            )
+                print(camera)
+                self.id= int(camera["id"]),
+                self.name= camera["name"],
+                self.activate= camera["activate"],
+                self.restreamEndpoint= camera["restreamEndpoint"],
+                self.state= camera["state"]
+
                 cam = self
                 session.add(cam)
                 session.commit()
             
-if __name__ == "__main__":
-    engine = create_engine("sqlite:///database.db", echo = True)
-    Base.metadata.create_all(bind= engine)
-    api_url = "http://192.168.1.212:48080/api/cameras" 
-    camera = Camera()
-    camera.load_from_api(engine, api_url)
+# if __name__ == "__main__":
+#     engine = create_engine("sqlite:///database.db", echo = True)
+#     Base.metadata.create_all(bind= engine)
+#     api_url = "http://192.168.1.212:48080/api/cameras" 
+#     camera = Camera()
+#     camera.load_from_api(engine, api_url)
 
