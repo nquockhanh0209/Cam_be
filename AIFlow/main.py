@@ -6,7 +6,13 @@ import multiprocessing
 import requests
 import json
 Base = declarative_base()
+import enum
 
+class AIFlowType(enum.Enum):
+    AiFlowDTO = 'AiFlowDTO'
+    CROWD = 'CROWD'
+    HUMAN =  'HUMAN'
+    VEHICLE= 'VEHICLE'
 class AIFlow(Base):
     __tablename__ = "ai_flow"
 
@@ -14,54 +20,53 @@ class AIFlow(Base):
     alert = Column(Boolean)
     apply = Column(Boolean)
     cameraIds = Column(PickleType)
-    type = Column(Enum('AiFlowDTO', 'CROWD', 'HUMAN', 'VEHICLE'))
-    def __init__(self, 
-                id,
-                alert,
-                apply,
-                cameraIds,
-                type
-                ):
+    type = Column(Enum(AIFlowType))
+    # def __init__(self, 
+    #             id: int,
+    #             alert: bool,
+    #             apply: bool,
+    #             cameraIds: [],
+    #             type: AIFlowType
+    #             ):
       
-        self.id = id
-        self.alert = alert
-        self.apply = apply
-        self.cameraIds =cameraIds
-        self.type = type
-      
-    def __repr__(self):
-        return self
-
-
-
+    #     self.id = id
+    #     self.alert = alert
+    #     self.apply = apply
+    #     self.cameraIds =cameraIds
+    #     self.type = type
+   
     
-def load_from_api(engine,api_url):
-    headers= {
-        "Id":"alo"
-    }
-    Session = sessionmaker(bind= engine)
-    session = Session()
-    res = requests.get(url = api_url, headers=headers)
-    aiflows = res.json()
- 
-    print("aiflows", aiflows)
-    for aiflow in aiflows:
-        print('aiflow["cameraIds"]',aiflow["cameraIds"])
-        if not bool(session.query(AIFlow).filter_by(id=aiflow["id"]).first()):
-            flow = AIFlow(int(aiflow["id"]),
-                        aiflow["alert"],
-                        aiflow["apply"],
-                        aiflow["cameraIds"],
-                        aiflow["type"]
-                        )
-            session.add(flow)
-            session.commit()
+    def load_from_api(self, engine ,api_url: String):
+        headers= {
+            "Id":"alo"
+        }
+        Session = sessionmaker(bind= engine)
+        session = Session()
+        res = requests.get(url = api_url, headers=headers)
+        aiflows = res.json()
+    
+   
+        for aiflow in aiflows:
+            
+            if not bool(session.query(AIFlow).filter_by(id=aiflow["id"]).first()):
+                
+                
+                self.__init__(int(aiflow["id"]),
+                            aiflow["alert"],
+                            aiflow["apply"],
+                            aiflow["cameraIds"],
+                            aiflow["type"]
+                            )
+                flow = self
+                session.add(flow)
+                session.commit()
 
         
 if __name__ == "__main__":
     engine = create_engine("sqlite:///database.db", echo = True)
     Base.metadata.create_all(bind= engine)
     api_url = "http://192.168.1.212:48080/api/aiflows" 
-    load_from_api(engine, api_url)
+    ai_flow = AIFlow()
+    ai_flow.load_from_api(engine, api_url)
     
 

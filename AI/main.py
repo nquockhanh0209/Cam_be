@@ -10,23 +10,22 @@ class ProcessAI(Base):
     __tablename__ = "process_ai"
     pid = Column(Integer, primary_key=True, nullable=False)
     
-    def __init__(self, 
-                pid
-                ):
+    # def __init__(self):
       
-        self.pid = pid
-def insert_new_pid(engine, pid):
-    Session = sessionmaker(bind= engine)
-    session = Session()
-    process_id = ProcessAI(pid)
-    session.add(process_id)
-    session.commit()       
-def task(engine):
-    subprocess.run(["./test.sh"]).stdout
+    #     self.pid = pid
+   
+         
+    def start(self, engine):
+        subprocess.run(["./test.sh"]).stdout
+        self.pid = getppid()
+        print(self.pid)
+        Session = sessionmaker(bind= engine)
+        session = Session()
+        process_id = self
+        session.add(process_id)
+        session.commit()
+      
 
-    pid = getppid()
-    print(pid)
-    insert_new_pid(engine,pid)
     
  
 # protect the entry point
@@ -34,8 +33,10 @@ if __name__ == '__main__':
     
     engine = create_engine("sqlite:///database.db", echo = True)
     Base.metadata.create_all(bind= engine)
-
-    child = Process(target=task, args=(engine,))
+    def start_process(engine):
+        process_ai = ProcessAI()
+        process_ai.start(engine)
+    child = Process(target=start_process, args=(engine,))
 
     child.start()
 
