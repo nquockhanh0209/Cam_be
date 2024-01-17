@@ -10,6 +10,8 @@ import requests
 import json
 import asyncio
 from AIProcess.ai_process import ProcessAI
+from Camera.camera import Camera
+
 import websockets
 import os
 from dotenv import load_dotenv
@@ -79,41 +81,26 @@ class ServiceAI(Base):
             
             
             camCreateParams = {
-                "name": "alo4",
-                "urlMainstream": "rtsp://alo4.com"
+                "name": "alo18",
+                "urlMainstream": "rtsp://alo18.com"
             }
             print("create_cam_url", create_cam_url)
             r = requests.post(url=create_cam_url, params=(camCreateParams), headers=headers)
             print("res",r.json())
             
             camUpdateParams = {
-                "id": 3,
+                "id": 2,
                 "serviceId": self.id
             }
             
         
             process_ai = ProcessAI()
             process_ai.start(engine, self.id)
+            
             r = requests.patch(url=update_cam_url, params=(camUpdateParams), headers=headers)
-               
-            self.id = 57   
-            async def start_websocket(wss_url: str):
-                print("wss_url",wss_url)
-                async with websockets.connect(wss_url) as ws:
-                    
-                    
-                    while True:
-                        msg = await ws.recv()
-                        
-                        if json.loads(msg)["dst"] ==str(self.id):
-                            print(str(json.loads(msg)["deliveryTag"]))
-                            res = {
-                                "deliveryTag": str(json.loads(msg)["deliveryTag"])
-                            }
-                            print(res)
-                            await ws.send(json.dumps(res))
-            final_wss_url = wss_url + str(self.id)
-            asyncio.run(start_websocket(final_wss_url))
+            print(r.json())
+            camera = Camera()
+            camera.update_or_create_cam_wss(engine, self.id)
         
 
     
