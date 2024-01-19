@@ -9,52 +9,72 @@ import enum
 import requests
 import json
 import asyncio
-from AIProcess.ai_process import ProcessAI
-from Camera.camera import Camera
+from AIProcess.model.ai_process_model import ProcessAIModel
+from AIProcess.repository.ai_process_repository import ProcessAIRepository
+from AIService.dto.ai_service_dto import AIServiceDTO
+from AIService.model.ai_service_model import ServiceAIModel
 
-import websockets
+from Base.BaseRepository import AbstractRepository
+from Camera.model.camera_model import CameraModel
+from Camera.repository.camera_repository import CameraRepository
+
+
 import os
 from dotenv import load_dotenv
-from datetime import datetime, timezone
+
+
 load_dotenv() 
-Base = declarative_base()
+
 wss_url = os.getenv('WSS_URL')
 create_cam_url = os.getenv('CREATE_CAM_URL')
 update_cam_url = os.getenv('UPDATE_CAM_URL')
 create_service_url = os.getenv('CREATE_SERVICE_URL')
-class AIServiceType(enum.Enum):
 
-    CROWD_AI = 'CROWD_AI'
-    HUMAN_AI =  'HUMAN_AI'
-    VEHICLE_AI= 'VEHICLE_AI'
 
-class ServiceAI(Base):
-    __tablename__ = "service_ai"
+class ServiceAIRepository(AbstractRepository):
+  
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    name= Column(String)
-    type= Enum(AIServiceType)
-    hostName= Column(String)
-    ipAddress= Column(String)
-    macAddress= Column(String)
-    heartbeat= Column(String)
-    state= Column(String)
-    cameraIds= Column(PickleType)
+    # def model_to_entity(model: ServiceAIModel) -> AIServiceDTO:
+        
 
-   
+    #     return AIServiceDTO(
+    #         id=model.id,
+    #         name=model.name,
+    #         type=model.type,
+    #         hostName=model.hostName,
+    #         ipAddress=model.ipAddress,
+    #         macAddress=model.macAddress,
+    #         heartbeat=model.heartbeat,
+    #         state=model.state,
+    #         cameraIds=model.cameraIds
+    #     )
+
+    # def entity_to_model(dto: AIServiceDTO, existing=None) -> ServiceAIModel:
+        
+
+    #     return ServiceAIModel(
+    #         id=dto.id,
+    #         name=dto.name,
+    #         type=dto.type,
+    #         hostName=dto.hostName,
+    #         ipAddress=dto.ipAddress,
+    #         macAddress=dto.macAddress,
+    #         heartbeat=dto.heartbeat,
+    #         state=dto.state,
+    #         cameraIds=dto.cameraIds
+    #     )
          
     
-    def create_service(self, engine, name: str, type: AIServiceType, hostName: str, ipAddress: str, macAddress: str, heartbeat: str):
-        Session = sessionmaker(bind= engine)
-        session = Session()
-        if not bool(session.query(ServiceAI).filter().first()):
+    def create_service(self, ai_dto: AIServiceDTO):
+       
+        if not bool(self.session.query(ServiceAIModel).filter().first()):
             body = {
-                "name": name,
-                "type": type,
-                "hostName": hostName,
-                "ipAddress": ipAddress,
-                "macAddress": macAddress,
-                "heartbeat": heartbeat,
+                "name": ai_dto.name,
+                "type": ai_dto.type,
+                "hostName": ai_dto.hostName,
+                "ipAddress": ai_dto.ipAddress,
+                "macAddress": ai_dto.macAddress,
+                "heartbeat": ai_dto.heartbeat,
 
             }
             
@@ -72,17 +92,49 @@ class ServiceAI(Base):
             self.ipAddress=res["ipAddress"]
             self.heartbeat=res["heartbeat"]
             self.state=res["state"]
-
+            # ai_dto = AIServiceDTO(res["id"], 
+            #                res["name"], 
+            #                res["type"], 
+            #                res["hostName"],
+            #                res["ipAddress"],
+            #                res["heartbeat"],
+            #                res["state"])
+            # service_ai_model =
+            new_ai_service = ServiceAIModel()
+            print(new_ai_service)
+            ai_service = new_ai_service.entity_to_model(AIServiceDTO(
+                res["id"],
+                res["name"],
+                res["type"],
+                res["hostName"],
+                res["ipAddress"],
+                res["macAddress"],
+                
+                res["heartbeat"],
+                res["state"],
+                None
+            ), ServiceAIModel)
             
-            service = self
-            session.add(service)
-            session.commit()
+            
+            # ai_service =ServiceAIModel(AIServiceDTO(
+            #     res["id"],
+            #     res["name"],
+            #     res["type"],
+            #     res["hostName"],
+            #     res["ipAddress"],
+            #     res["macAddress"],
+                
+            #     res["heartbeat"],
+            #     res["state"],
+            #     None
+            # )) 
+            self.save(ai_service)
             
             
             
             camCreateParams = {
-                "name": "alo18",
-                "urlMainstream": "rtsp://alo18.com"
+                "name": "alo19",
+                "urlMainstream": "rtsp://alo19.com"
             }
             print("create_cam_url", create_cam_url)
             r = requests.post(url=create_cam_url, params=(camCreateParams), headers=headers)
@@ -94,13 +146,17 @@ class ServiceAI(Base):
             }
             
         
-            process_ai = ProcessAI()
-            process_ai.start(engine, self.id)
+            # process_ai = ProcessAIRepository[ProcessAIModel](self.session)
+            process_ai = ProcessAIRepository(self.session)
+            
+            process_ai.start( self.id)
             
             r = requests.patch(url=update_cam_url, params=(camUpdateParams), headers=headers)
             print(r.json())
-            camera = Camera()
-            camera.update_or_create_cam_wss(engine, self.id)
+            # camera = CameraRepository[CameraModel](self.session)
+            camera = CameraRepository(self.session)
+            
+            camera.update_or_create_cam_wss( self.id)
         
 
     

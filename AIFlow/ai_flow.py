@@ -5,18 +5,16 @@ from threading import Thread
 import multiprocessing
 import requests
 import json
-Base = declarative_base()
-import enum
 
-class AIFlowType(enum.Enum):
-    AiFlowDTO = 'AiFlowDTO'
-    CROWD = 'CROWD'
-    HUMAN =  'HUMAN'
-    VEHICLE= 'VEHICLE'
-class AIFlow(Base):
+import enum
+from AIFlow.dto.ai_flow_dto import AIFlowDTO
+from ENUM.enum import AIFlowType
+
+
+class AIFlow():
     __tablename__ = "ai_flow"
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    # id = Column(Integer, primary_key=True, nullable=False)
     alert = Column(Boolean)
     apply = Column(Boolean)
     cameraIds = Column(PickleType)
@@ -37,11 +35,11 @@ class AIFlow(Base):
    
     
     def load_from_api(self, engine ,api_url: str):
+        session = self.init_session(engine)
         headers= {
             "Id":"alo"
         }
-        Session = sessionmaker(bind= engine)
-        session = Session()
+        
         res = requests.get(url = api_url, headers=headers)
         aiflows = res.json()
     
@@ -57,9 +55,12 @@ class AIFlow(Base):
                 self.cameraIds= aiflow["cameraIds"],
                 self.type= aiflow["type"]
                             
-                flow = self
-                session.add(flow)
-                session.commit()
+                # self.id = AIFlowDTO(int(aiflow["id"]), 
+                #                  aiflow["alert"], 
+                #                  aiflow["apply"],
+                #                  aiflow["cameraIds"],
+                #                  aiflow["type"])
+                self.create(session)
 
         
 # if __name__ == "__main__":
