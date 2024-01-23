@@ -16,4 +16,10 @@ class CameraState(enum.Enum):
     CONNECTED = 'CONNECTED'
     DISCONNECTED =  'DISCONNECTED'
     CONNECTING= 'CONNECTING'
+    
+# class ConsumerType(enum.Enum):
+  
+#     CAMERA_SERVICE = 'SERVICE'
+   
+
 

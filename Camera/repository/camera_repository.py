@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, ForeignKey, Column, String, Integer, CHAR, Boolean, ARRAY,Enum, update
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from AIProcess.model.ai_process_model import ProcessAIModel
+# from AIProcess.model.ai_process_model import ProcessAIModel
 from AIProcess.repository.ai_process_repository import ProcessAIRepository
 import requests
 import json
@@ -87,7 +87,7 @@ class CameraRepository(AbstractRepository):
             async with websockets.connect(wss_url) as ws: 
                 while True:
                     msg = await ws.recv()
-                    print
+                   
                     data = json.loads(json.loads(msg)["data"])
                     print(data)
                     
@@ -106,6 +106,6 @@ class CameraRepository(AbstractRepository):
 #     engine = create_engine("sqlite:///database.db", echo = True)
 #     Base.metadata.create_all(bind= engine)
 #     api_url = "http://192.168.1.212:48080/api/cameras" 
-#     camera = Camera()
+#     camera = CameraRepository()
 #     camera.load_from_api(engine, api_url)
 

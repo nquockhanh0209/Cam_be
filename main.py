@@ -1,6 +1,8 @@
+import asyncio
 from sqlalchemy import create_engine, Table, Column, String, Integer,  PickleType,Enum, update
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import load_only
+from AIProcess.model.ai_process_model import ProcessAIModel
 from AIService.repository.ai_service_repository import ServiceAIRepository
 from AIService.dto.ai_service_dto import AIServiceDTO
 from Camera.model.camera_model import CameraModel
@@ -13,6 +15,8 @@ from sqlalchemy.orm import sessionmaker
 from AIService.model.ai_service_model import ServiceAIModel
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
+
+from EventDriven.EventHandler.camera_handler import EventCameraHandler
 Base = declarative_base()
 def upgrade(engine):
     mc = MigrationContext.configure(engine.connect())
@@ -80,12 +84,13 @@ def start_update_or_create_cam_wss():
         
         for ai_service_id in ai_service_ids:
             
-            
+            # print(1111111111111111111111111111,ai_service_id)
             # camera_repo = CameraRepository[CameraModel](session)
-            camera_repo = CameraRepository(session)
+            camera_event_handler = EventCameraHandler("service/"+str(ai_service_id[0]))
             
+            asyncio.run(camera_event_handler.handle_wss_msg(session))
             
-            camera_repo.update_or_create_cam_wss(ai_service_id[0])
+    
     thread = Process(target=update_or_create_cam_wss)
 
     thread.start()
@@ -111,7 +116,14 @@ if __name__ == '__main__':
     Base.metadata.create_all(bind= engine)
     
     # drop_table('service_ai', engine)
+    # drop_table('process_ai', engine)
+    
+    # drop_table('camera', engine)
+    
     # ServiceAIModel.__table__.create(engine)
+    # CameraModel.__table__.create(engine)
+    # ProcessAIModel.__table__.create(engine)
+    
     start_ai_service()
     get_cam_data()
     start_update_or_create_cam_wss()

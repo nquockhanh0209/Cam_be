@@ -22,6 +22,8 @@ from Camera.repository.camera_repository import CameraRepository
 import os
 from dotenv import load_dotenv
 
+from EventDriven.EventHandler.camera_handler import EventCameraHandler
+
 
 load_dotenv() 
 
@@ -101,7 +103,7 @@ class ServiceAIRepository(AbstractRepository):
             #                res["state"])
             # service_ai_model =
             new_ai_service = ServiceAIModel()
-            print(new_ai_service)
+            print("new_ai_service",new_ai_service)
             ai_service = new_ai_service.entity_to_model(AIServiceDTO(
                 res["id"],
                 res["name"],
@@ -133,8 +135,8 @@ class ServiceAIRepository(AbstractRepository):
             
             
             camCreateParams = {
-                "name": "alo19",
-                "urlMainstream": "rtsp://alo19.com"
+                "name": "alo1902",
+                "urlMainstream": "rtsp://alo1902.com"
             }
             print("create_cam_url", create_cam_url)
             r = requests.post(url=create_cam_url, params=(camCreateParams), headers=headers)
@@ -152,11 +154,12 @@ class ServiceAIRepository(AbstractRepository):
             process_ai.start( self.id)
             
             r = requests.patch(url=update_cam_url, params=(camUpdateParams), headers=headers)
-            print(r.json())
+            print("r.json()", r.json())
             # camera = CameraRepository[CameraModel](self.session)
-            camera = CameraRepository(self.session)
+            camera_event_handler = EventCameraHandler("service/"+str(self.id))
             
-            camera.update_or_create_cam_wss( self.id)
+            
+            asyncio.run(camera_event_handler.handle_wss_msg(self.session))
         
 
     
